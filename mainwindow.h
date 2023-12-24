@@ -28,6 +28,9 @@ private slots:
     int on_genbutton_clicked();
     void on_save_clicked();
     void on_paste_button_clicked();
+    void on_fordbell_button_clicked(const QVector<Edge>& edges, int numVertices);
+
+
 
 private:
     Ui::MainWindow *ui;
@@ -35,9 +38,10 @@ private:
     void clearGridLayout(QGridLayout *layout);
     void drawGraph(const QVector<QVector<int>>& matrix);
     void displayWeightMatrix(const QVector<QVector<int>>& matrix);
-    QVector<QVector<int>> createSymmetricMatrix(int size);
-      void bellmanFord(const QVector<Edge>& edges, int numVertices, int sourceVertex);
+    QVector<QVector<int>> createMatrix(int size);
+
 
 
 };
+
 #endif // MAINWINDOW_H

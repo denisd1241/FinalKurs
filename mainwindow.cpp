@@ -6,20 +6,19 @@
 #include <QGraphicsScene>
 #include <QGraphicsEllipseItem>
 #include <QInputDialog>
-#include <QQueue> // Add this for tree layout
 #include <QRandomGenerator>
-#include <QtMath>
 #include <limits>
 #include <QFileDialog>
 #include <QTextStream>
 #include <QMessageBox>
+#include <QStringListModel>
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
     ui->graphicsView->setRenderHint(QPainter::Antialiasing);
-    ui->gridLayoutWidget->setStyleSheet("background-color: #a8a8a8; border: 1px solid #333;");
+    ui->gridLayoutWidget->setStyleSheet("background-color: #ffffff; border: 1px solid #333;");
 
 }
 
@@ -29,7 +28,7 @@ MainWindow::~MainWindow()
 
 }
 
-QVector<QVector<int>> MainWindow::createSymmetricMatrix(int size) {
+QVector<QVector<int>> MainWindow::createMatrix(int size) {
     srand(time(0));
 
     QVector<QVector<int>> matrix(size, QVector<int>(size, 0));
@@ -71,25 +70,24 @@ void MainWindow::drawGraph(const QVector<QVector<int>>& matrix)
     int nodeRadius = 30;
 
     QVector<QPoint> nodePositions(matrix.size());
-
+    int coord[matrix.size()];
     // Randomly place nodes
     for (int i = 0; i < matrix.size(); ++i) {
-        int x = QRandomGenerator::global()->bounded(400) + 200; // Adjust the range as needed
-        int y = QRandomGenerator::global()->bounded(400) + 200; // Adjust the range as needed
-
+        int x = rand () % 400 +100; // рандомная генерация положения вершин
+        int y = rand () % 400 +100;
+        coord[i] = x;
         nodePositions[i] = QPoint(x, y);
 
         QGraphicsEllipseItem *node = new QGraphicsEllipseItem(x, y, nodeRadius, nodeRadius);
-        QBrush brush(Qt::black); // Replace the color with the desired one
+        QBrush brush(Qt::black);
         node->setBrush(brush);
         scene->addItem(node);
 
-        // Add labels with vertex numbers
         QGraphicsTextItem *label = new QGraphicsTextItem(QString::number(i + 1));
         label->setPos(nodePositions[i].x() + nodeRadius / 2 - label->boundingRect().width() / 2, nodePositions[i].y() + nodeRadius / 2 - label->boundingRect().height() / 2 - label->boundingRect().y());
         label->setDefaultTextColor(Qt::white);
         QFont font = label->font();
-        font.setPointSize(10); // Set the desired font size
+        font.setPointSize(10);
         label->setFont(font);
         scene->addItem(label);
     }
@@ -104,7 +102,6 @@ void MainWindow::drawGraph(const QVector<QVector<int>>& matrix)
     }
     QVector<Edge> edgesList;
 
-    // Create edges based on the adjacency matrix and weight matrix
     for (int i = 0; i < matrix.size(); ++i) {
         for (int j = i; j < matrix.size(); ++j) {
 
@@ -125,35 +122,36 @@ void MainWindow::drawGraph(const QVector<QVector<int>>& matrix)
             }
         }
     }
-    bellmanFord(edgesList, matrix.size(), 0);
-    for (const Edge& edge : edgesList) {
+
+    connect(ui->fordbell_button, &QPushButton::clicked, this, [=]() {
+    on_fordbell_button_clicked(edgesList, matrix.size());
+    });
+            for (const Edge& edge : edgesList) {
         qDebug() << "Source:" << edge.source << "Destination:" << edge.destination << "Weight:" << edge.weight;
     }
     for (const Edge& edge : edgesList) {
-        // Draw a path between nodes using QGraphicsLineItem
+        // Отрисовка линий
         QGraphicsLineItem *line = new QGraphicsLineItem(nodePositions[edge.source].x() + nodeRadius / 2, nodePositions[edge.source].y() + nodeRadius / 2,
                                                         nodePositions[edge.destination].x() + nodeRadius / 2, nodePositions[edge.destination].y() + nodeRadius / 2);
-        QPen pen(Qt::black); // Create a pen with the desired color
+        QPen pen(Qt::black);
         line->setPen(pen);
         scene->addItem(line);
 
-        // Calculate position for the weight label
+        // Вычисление позиций
         int labelX = (nodePositions[edge.source].x() + nodePositions[edge.destination].x()) / 2;
         int labelY = (nodePositions[edge.source].y() + nodePositions[edge.destination].y()) / 2;
 
-        // Add label with the weight to the scene
         QGraphicsTextItem *weightLabel = new QGraphicsTextItem(QString::number(edge.weight));
         weightLabel->setPos(labelX - weightLabel->boundingRect().width() / 2, labelY - weightLabel->boundingRect().height() / 2);
         QFont font = weightLabel->font();
-        font.setPointSize(10); // Set the desired font size
+        font.setPointSize(10);
         weightLabel->setFont(font);
         scene->addItem(weightLabel);
 
-        // Optionally, set the text color to red
+
         weightLabel->setDefaultTextColor(Qt::red);
 
         if (ui->checkBox->isChecked()) {
-            // Draw an arrowhead at the end of the line
             double angle = std::atan2(nodePositions[edge.destination].y() - nodePositions[edge.source].y(), nodePositions[edge.destination].x() - nodePositions[edge.source].x());
             double arrowSize = 10.0;
 
@@ -180,7 +178,7 @@ int MainWindow::on_genbutton_clicked()
 
     if (ok) {
         clearGridLayout(gridLayout);
-        QVector<QVector<int>> symmetricMatrix = createSymmetricMatrix(matrixSize);
+        QVector<QVector<int>> symmetricMatrix = createMatrix(matrixSize);
 
         for (int i = 0; i < matrixSize; ++i) {
             for (int j = 0; j < matrixSize; ++j) {
@@ -194,8 +192,8 @@ int MainWindow::on_genbutton_clicked()
         }
 
         // Рисуем граф
+        disconnect(ui->fordbell_button, &QPushButton::clicked, this, nullptr);
         drawGraph(symmetricMatrix);
-        int sourceVertex = 0; // Укажите источник по своему усмотрению
     }
     return matrixSize;
 }
@@ -228,22 +226,21 @@ void MainWindow::on_save_clicked()
     // Создаем поток для записи данных в файл
     QTextStream out(&file);
 
-    // Получаем матрицу из интерфейса и записываем ее в файл
+    // Получаем матрицу из интерфейса
     int matrixSize = ui->gridLayout->rowCount();
     for (int i = 0; i < matrixSize; ++i) {
         for (int j = 0; j < matrixSize; ++j) {
             QLabel *label = qobject_cast<QLabel*>(ui->gridLayout->itemAtPosition(i, j)->widget());
-            if (label) {
-                int value = label->text().toInt();
-                out << value << " ";
-            }
+            int value = label->text().toInt();
+            out << value << " ";
         }
         out << "\n";
     }
 
-    // Закрываем файл
+
     file.close();
 }
+
 
 void MainWindow::on_paste_button_clicked()
 {
@@ -277,7 +274,6 @@ void MainWindow::on_paste_button_clicked()
         matrix.append(row);
     }
 
-    // Закрываем файл
     file.close();
 
     // Очищаем текущий интерфейс
@@ -299,9 +295,15 @@ void MainWindow::on_paste_button_clicked()
     // Рисуем граф
     drawGraph(matrix);
 }
-void MainWindow::bellmanFord(const QVector<Edge>& edges, int numVertices, int sourceVertex) {
-    QVector<int> distance(numVertices, std::numeric_limits<int>::max());
 
+void MainWindow::on_fordbell_button_clicked(const QVector<Edge>& edges, int numVertices)
+{
+    bool ok = false;
+    QVector<int> distance(numVertices, std::numeric_limits<int>::max());
+    int src = QInputDialog::getInt(this, tr("Введите начальную вершину"), tr("Вершина:"), 1, 1, numVertices, 1, &ok) - 1;
+    int sourceVertex = src;
+    QVector<QString> shortestPaths;
+    QListView *List = ui->listView;
     distance[sourceVertex] = 0;
 
     for (int i = 0; i < numVertices - 1; ++i) {
@@ -311,10 +313,22 @@ void MainWindow::bellmanFord(const QVector<Edge>& edges, int numVertices, int so
             }
         }
     }
+    shortestPaths.clear();
 
+    // Заполняем вектор shortestPaths результатами
+    for (int i = 0; i < numVertices; ++i) {
+        QString path = QString("От  %1 вершины к %2 минимальное расстояние: %3").arg(sourceVertex + 1).arg(i + 1).arg(distance[i]);
+        shortestPaths.append(path);
+    }
+
+    QStringListModel *model = new QStringListModel(shortestPaths);
+
+    // Привязываем модель данных к QListView
+    List->setModel(model);
     // Печать результатов
     qDebug() << "Результаты алгоритма Форда-Беллмана:";
     for (int i = 0; i < numVertices; ++i) {
-        qDebug() << "От вершины " << sourceVertex + 1 << " к вершине " << i + 1 << " минимальное расстояние: " << distance[i];
+        qDebug() << "От " << sourceVertex + 1 << "вершины к " << i + 1 << " минимальное расстояние: " << distance[i];
     }
 }
+

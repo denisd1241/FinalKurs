@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>802</width>
-    <height>564</height>
+    <width>809</width>
+    <height>559</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -18,8 +18,8 @@
     <property name="geometry">
      <rect>
       <x>50</x>
-      <y>270</y>
-      <width>301</width>
+      <y>380</y>
+      <width>311</width>
       <height>41</height>
      </rect>
     </property>
@@ -48,19 +48,6 @@
      </rect>
     </property>
    </widget>
-   <widget class="QPushButton" name="enterMatrix">
-    <property name="geometry">
-     <rect>
-      <x>50</x>
-      <y>330</y>
-      <width>301</width>
-      <height>41</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Ввести матрицу</string>
-    </property>
-   </widget>
    <widget class="QCheckBox" name="checkBox">
     <property name="geometry">
      <rect>
@@ -78,22 +65,22 @@
     <property name="geometry">
      <rect>
       <x>50</x>
-      <y>390</y>
-      <width>301</width>
+      <y>430</y>
+      <width>311</width>
       <height>41</height>
      </rect>
     </property>
     <property name="text">
-     <string>Алгоритм Форда</string>
+     <string>Алгоритм Форда-Беллмана</string>
     </property>
    </widget>
    <widget class="QPushButton" name="save">
     <property name="geometry">
      <rect>
       <x>370</x>
-      <y>450</y>
-      <width>171</width>
-      <height>21</height>
+      <y>440</y>
+      <width>191</width>
+      <height>31</height>
      </rect>
     </property>
     <property name="text">
@@ -103,14 +90,50 @@
    <widget class="QPushButton" name="paste_button">
     <property name="geometry">
      <rect>
-      <x>580</x>
-      <y>450</y>
-      <width>181</width>
-      <height>24</height>
+      <x>570</x>
+      <y>440</y>
+      <width>201</width>
+      <height>31</height>
      </rect>
     </property>
     <property name="text">
      <string>Вставить матрицу из файла</string>
+    </property>
+   </widget>
+   <widget class="QListView" name="listView">
+    <property name="geometry">
+     <rect>
+      <x>50</x>
+      <y>270</y>
+      <width>311</width>
+      <height>101</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label">
+    <property name="geometry">
+     <rect>
+      <x>50</x>
+      <y>15</y>
+      <width>121</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Матрица смежности</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_2">
+    <property name="geometry">
+     <rect>
+      <x>370</x>
+      <y>10</y>
+      <width>131</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Отображение графа</string>
     </property>
    </widget>
   </widget>
@@ -119,7 +142,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>802</width>
+     <width>809</width>
      <height>21</height>
     </rect>
    </property>
